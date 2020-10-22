@@ -52,22 +52,25 @@ mod tests {
 	namespace: String,
 	token: String,
     }
-    fn load_config() -> Option<TestConfigValues> {
+
+    fn load_config() -> TestConfigValues {
 	let s = match fs::read_to_string("test-config.toml") {
 	    Ok(x) => x,
-	    Err(_) => return None,
+	    Err(_) => panic!("Please create config file 'test-config.toml' with namespace and token for testing the API"),
 	};
 	return match toml::from_str(&s) {
-	    Ok(x) => Some(x),
-	    Err(x) => None
+	    Ok(x) => x,
+	    Err(x) => panic!(
+		r#"Contents of 'test-config.toml' should be 
+namespace="..."
+token="...""#);
+
 	};
     }
     
     #[test]
     fn create_valid() {
-	let c = match load_config() {
-	    Some(x) => x,
-	    None => panic!("Please create config file 'test-config.toml' with namespace and token for testing the API"),
-	};
+	let c = load_config();
     }
+
 }
