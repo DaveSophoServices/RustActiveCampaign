@@ -1,13 +1,22 @@
 mod active_client {
     use reqwest::blocking::Client;
-    use reqwest::header;
+    use reqwest::{header,StatusCode};
+    use serde::Deserialize;
     
     pub struct ACSession {
 	client: Client,
 	base: String,
-	
     }
 
+    #[derive(Deserialize,Debug)]
+    pub struct Users {
+	pub users: Vec<User>,
+    }
+    #[derive(Deserialize,Debug)]
+    pub struct User {
+	username: String,
+    }
+    
     pub fn new(ns: &str, token: &str) -> Result<ACSession, String> {
 	let mut headers = header::HeaderMap::new();
 	let val = match header::HeaderValue::from_str(token) {
@@ -25,8 +34,28 @@ mod active_client {
 	    };
 	Ok(ACSession {
 	    client,
-	    base: format!("https://{}.api1-us1.com/api/3/", ns),
+	    base: format!("https://{}.api-us1.com/api/3", ns),
 	})	    
+    }
+    impl ACSession {
+	pub fn list_all_users(&self) -> Result<Users,reqwest::Error> {
+	    let u = format!("{}/users",self.base);
+	    let r = self.client.get(&u).send()?;
+	    match r.status() {
+		StatusCode::OK => {
+		    let v:Users = match r.json() {
+			Ok(x) => x,
+			Err(x) => panic!("Invalid response from server"),
+		    };
+		    Ok(v)
+		},
+		_ => {
+		    
+		    panic!("{}: Error getting active campaign user list", r.status());
+		},
+
+	    }
+	}
     }
 }
 
@@ -63,7 +92,7 @@ mod tests {
 	    Err(x) => panic!(
 		r#"Contents of 'test-config.toml' should be 
 namespace="..."
-token="...""#);
+token="...""#),
 
 	};
     }
@@ -73,4 +102,15 @@ token="...""#);
 	let c = load_config();
     }
 
+    #[test]
+    fn list_all_users() {
+	let c = load_config();
+	let ac = match active_client::new(&c.namespace,&c.token) {
+	    Ok(x) => x,
+	    Err(_) => panic!("no return value from new!"),
+	};
+	
+	let user_list = ac.list_all_users().unwrap();
+	assert_eq!(user_list.users.len(), 7);
+    }
 }
