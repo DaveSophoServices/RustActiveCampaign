@@ -5,7 +5,8 @@ mod active_client {
     use reqwest::blocking::Client;
     use reqwest::{header,StatusCode};
     use serde::Deserialize;
-
+    use std::fs;
+	
     use crate::campaign::{Campaign,Campaigns};
     use crate::user::{User,Users};
     
@@ -49,9 +50,13 @@ mod active_client {
 	    Ok(v)
 	}
 	pub fn list_all_campaigns(&self) -> Result<Campaigns,reqwest::Error> {
-	    let v:Campaigns = match self.get("campaigns")?.json() {
+	    let r = self.get("campaigns")?;
+	    let v:Campaigns = match r.json() {
 		Ok(x) => x,
-		Err(x) => panic!("Failed to decode JSON from server: {}",x),
+		Err(x) => {
+		    fs::write("json.txt", self.get("campaigns")?.text()?);
+		    panic!("Failed to decode JSON from server: {}",x)
+		},
 	    };
 	    Ok(v)
 	}
