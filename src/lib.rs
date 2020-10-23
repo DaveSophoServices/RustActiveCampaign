@@ -1,7 +1,13 @@
+mod campaign;
+mod user;
+
 mod active_client {
     use reqwest::blocking::Client;
     use reqwest::{header,StatusCode};
     use serde::Deserialize;
+
+    use crate::campaign::{Campaign,Campaigns};
+    use crate::user::{User,Users};
     
     pub struct ACSession {
 	client: Client,
@@ -9,12 +15,8 @@ mod active_client {
     }
 
     #[derive(Deserialize,Debug)]
-    pub struct Users {
-	pub users: Vec<User>,
-    }
-    #[derive(Deserialize,Debug)]
-    pub struct User {
-	username: String,
+    pub struct Meta {
+	pub total: String,
     }
     
     pub fn new(ns: &str, token: &str) -> Result<ACSession, String> {
@@ -39,22 +41,28 @@ mod active_client {
     }
     impl ACSession {
 	pub fn list_all_users(&self) -> Result<Users,reqwest::Error> {
-	    let u = format!("{}/users",self.base);
+	    let r = self.get("users")?;
+	    let v:Users = match r.json() {
+		Ok(x) => x,
+		Err(_) => panic!("Invalid response from server"),
+	    };
+	    Ok(v)
+	}
+	pub fn list_all_campaigns(&self) -> Result<Campaigns,reqwest::Error> {
+	    let v:Campaigns = match self.get("campaigns")?.json() {
+		Ok(x) => x,
+		Err(x) => panic!("Failed to decode JSON from server: {}",x),
+	    };
+	    Ok(v)
+	}
+
+	fn get(&self, ext:&str) -> Result<reqwest::blocking::Response, reqwest::Error> {
+	    let u = format!("{}/{}", self.base, ext);
 	    let r = self.client.get(&u).send()?;
 	    match r.status() {
-		StatusCode::OK => {
-		    let v:Users = match r.json() {
-			Ok(x) => x,
-			Err(x) => panic!("Invalid response from server"),
-		    };
-		    Ok(v)
-		},
-		_ => {
-		    
-		    panic!("{}: Error getting active campaign user list", r.status());
-		},
-
-	    }
+		StatusCode::OK => Ok(r),
+		_ => panic!("{}: Error calling get on url '{}'", r.status(), r.url())
+	    }		    
 	}
     }
 }
@@ -112,5 +120,17 @@ token="...""#),
 	
 	let user_list = ac.list_all_users().unwrap();
 	assert_eq!(user_list.users.len(), 7);
+    }
+
+    #[test]
+    fn list_all_campaigns() {
+	let c = load_config();
+	match active_client::new(&c.namespace,&c.token) {
+	    Ok(ac) => {
+		let campaign_list = ac.list_all_campaigns().unwrap();
+		assert!(campaign_list.campaigns.len() > 0);
+	    }
+	    Err(_) => panic!("no return value from new"),
+	};
     }
 }
