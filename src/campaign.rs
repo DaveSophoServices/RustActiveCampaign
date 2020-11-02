@@ -1,4 +1,4 @@
-use serde::Deserialize;
+use serde::{Deserialize,Deserializer};
 use crate::active_client;
 use std::collections::HashMap;
 
@@ -46,35 +46,50 @@ pub struct Campaign {
     // "total_amt": "0",
     total_amt: String,
     // "opens": "0",
-    opens: String,
+    #[serde(deserialize_with="deserialize_u64")]
+    opens: u64,
     // "uniqueopens": "0",
-    uniqueopens: String,
+    #[serde(deserialize_with="deserialize_u64")]
+    uniqueopens: u64,
     // "linkclicks": "0",
-    linkclicks: String,
+    #[serde(deserialize_with="deserialize_u64")]
+    linkclicks: u64,
     // "uniquelinkclicks": "0",
-    uniquelinkclicks: String,
+    #[serde(deserialize_with="deserialize_u64")]
+    uniquelinkclicks: u64,
     // "subscriberclicks": "0",
-    subscriberclicks: String,
+    #[serde(deserialize_with="deserialize_u64")]
+    subscriberclicks: u64,
     // "forwards": "0",
-    forwards: String,
+    #[serde(deserialize_with="deserialize_u64")]
+    forwards: u64,
     // "uniqueforwards": "0",
-    uniqueforwards: String,
+    #[serde(deserialize_with="deserialize_u64")]
+    uniqueforwards: u64,
     // "hardbounces": "0",
-    hardbounces: String,
+    #[serde(deserialize_with="deserialize_u64")]
+    hardbounces: u64,
     // "softbounces": "0",
-    softbounces: String,
+    #[serde(deserialize_with="deserialize_u64")]
+    softbounces: u64,
     // "unsubscribes": "0",
-    unsubscribes: String,
+    #[serde(deserialize_with="deserialize_u64")]
+    unsubscribes: u64,
     // "unsubreasons": "0",
-    unsubreasons: String,
+    #[serde(deserialize_with="deserialize_u64")]
+    unsubreasons: u64,
     // "updates": "0",
-    updates: String,
+    #[serde(deserialize_with="deserialize_u64")]
+    updates: u64,
     // "socialshares": "0",
-    socialshares: String,
+    #[serde(deserialize_with="deserialize_u64")]
+    socialshares: u64,
     // "replies": "0",
-    replies: String,
+    #[serde(deserialize_with="deserialize_u64")]
+    replies: u64,
     // "uniquereplies": "0",
-    uniquereplies: String,
+    #[serde(deserialize_with="deserialize_u64")]
+    uniquereplies: 0,
     // "status": "0",
     status: String,
     // "public": "1",
@@ -193,3 +208,8 @@ pub struct Campaigns {
     pub meta: active_client::Meta,
 }
 
+fn deserialize_u64<'de,D>(deserializer:D) -> Result<u64, D::Error>
+where D: Deserializer<'de> {
+    let buf = String::deserialize(deserializer)?;
+    buf.parse::<u64>().map_err(serde::de::Error::custom)
+}
