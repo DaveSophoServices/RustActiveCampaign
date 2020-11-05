@@ -1,13 +1,13 @@
-mod campaign;
-mod user;
+pub mod campaign;
+pub mod user;
 
 use reqwest::blocking::Client;
 use reqwest::{header,StatusCode};
 use serde::Deserialize;
 use std::fs;
 
-use crate::campaign::{Campaign,Campaigns};
-use crate::user::{User,Users};
+use campaign::{Campaign,Campaigns};
+use user::{User,Users};
 
 pub struct ACSession {
     client: Client,
