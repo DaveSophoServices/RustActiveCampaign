@@ -1,5 +1,4 @@
 use serde::{Deserialize,Deserializer};
-use crate::active_client;
 use std::collections::HashMap;
 
 #[derive(Deserialize,Debug)]
@@ -41,10 +40,12 @@ pub struct Campaign {
     sdate: Option<String>,
     // "ldate": null,
     ldate: Option<String>,
-    // "send_amt": "0",
-    send_amt: String,
+    // "send_amt": "0",    
+    #[serde(deserialize_with="deserialize_u64")]
+    send_amt: u64,
+    #[serde(deserialize_with="deserialize_u64")]
     // "total_amt": "0",
-    total_amt: String,
+    total_amt: u64,
     // "opens": "0",
     #[serde(deserialize_with="deserialize_u64")]
     opens: u64,
@@ -89,7 +90,7 @@ pub struct Campaign {
     replies: u64,
     // "uniquereplies": "0",
     #[serde(deserialize_with="deserialize_u64")]
-    uniquereplies: 0,
+    uniquereplies: u64,
     // "status": "0",
     status: String,
     // "public": "1",
@@ -205,11 +206,12 @@ pub struct Campaign {
 #[derive(Deserialize,Debug)]
 pub struct Campaigns {
     pub campaigns: Vec<Campaign>,
-    pub meta: active_client::Meta,
+    pub meta: super::Meta,
 }
 
 fn deserialize_u64<'de,D>(deserializer:D) -> Result<u64, D::Error>
 where D: Deserializer<'de> {
     let buf = String::deserialize(deserializer)?;
+    //println!("mapping {} -> {:#?}", buf, buf.parse::<u64>());
     buf.parse::<u64>().map_err(serde::de::Error::custom)
 }
