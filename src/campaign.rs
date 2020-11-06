@@ -195,6 +195,7 @@ pub struct Campaign {
     //     "links": "https://:account.api-us1.com/api/3/campaigns/1/links",
     //     "campaignLists": "https://:account.api-us1.com/api/3/campaigns/1/campaignLists"
     // },
+    #[serde(skip_serializing)]
     links: HashMap<String,String>,
     // "id": "1",
     id: String,
