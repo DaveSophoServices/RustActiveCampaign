@@ -5,6 +5,7 @@ use reqwest::blocking::Client;
 use reqwest::{header,StatusCode};
 use serde::Deserialize;
 use std::fs;
+use log::debug;
 
 use campaign::{Campaign,Campaigns};
 use user::{User,Users};
@@ -48,21 +49,34 @@ impl ACSession {
 	};
 	Ok(v)
     }
-    pub fn list_all_campaigns(&self) -> Result<Campaigns,reqwest::Error> {
-	let r = self.get("campaigns")?;
-	let v:Campaigns = match r.json() {
-	    Ok(x) => x,
-	    Err(x) => {
-		fs::write("json.txt", self.get("campaigns")?.text()?);
-		panic!("Failed to decode JSON from server: {}",x)
-	    },
-	};
-	Ok(v)
+    pub fn list_all_campaigns(&self) -> Result<Vec<Campaign>,reqwest::Error> {
+	let mut ret = Vec::new();
+	let mut offset = 0;
+	loop {
+	    let r = self.get(&format!("campaigns?offset={}", offset))?;
+	    let mut v:Campaigns = match r.json() {
+		Ok(x) => x,
+		Err(x) => {
+		    fs::write("json.txt", self.get("campaigns")?.text()?);
+		    panic!("Failed to decode JSON from server: {}",x)
+		},
+	    };
+	    debug!("Campaigns: {:#?}", v);
+	    if v.campaigns.len() > 0 {
+		offset += v.campaigns.len();
+		ret.append(&mut v.campaigns);
+	    } else {
+		break;
+	    }
+	}
+	Ok(ret)
     }
 
     fn get(&self, ext:&str) -> Result<reqwest::blocking::Response, reqwest::Error> {
 	let u = format!("{}/{}", self.base, ext);
+	debug!("Getting URL {}", u);
 	let r = self.client.get(&u).send()?;
+	debug!("Status code: {}", r.status());
 	match r.status() {
 	    StatusCode::OK => Ok(r),
 	    _ => panic!("{}: Error calling get on url '{}'", r.status(), r.url())
@@ -94,6 +108,16 @@ mod tests {
 	token: String,
     }
 
+    fn init_log() {
+	use simplelog::*;
+	let mut c = ConfigBuilder::new();
+	c.add_filter_allow_str("rust_");
+	WriteLogger::init(
+	    LevelFilter::Debug,
+	    c.build(),
+	    std::fs::File::create("log").unwrap());
+
+    }
     fn load_config() -> TestConfigValues {
 	let s = match fs::read_to_string("test-config.toml") {
 	    Ok(x) => x,
@@ -116,6 +140,7 @@ token="...""#),
 
     #[test]
     fn list_all_users() {
+	init_log();
 	let c = load_config();
 	let ac = match new(&c.namespace,&c.token) {
 	    Ok(x) => x,
@@ -128,11 +153,12 @@ token="...""#),
 
     #[test]
     fn list_all_campaigns() {
+	init_log();
 	let c = load_config();
 	match new(&c.namespace,&c.token) {
 	    Ok(ac) => {
 		let campaign_list = ac.list_all_campaigns().unwrap();
-		assert!(campaign_list.campaigns.len() > 0);
+		assert!(campaign_list.len() > 0);
 	    }
 	    Err(_) => panic!("no return value from new"),
 	};

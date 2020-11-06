@@ -213,50 +213,6 @@ pub struct Campaigns {
 fn deserialize_u64<'de,D>(deserializer:D) -> Result<u64, D::Error>
 where D: Deserializer<'de> {
     let buf = String::deserialize(deserializer)?;
-    //println!("mapping {} -> {:#?}", buf, buf.parse::<u64>());
     buf.parse::<u64>().map_err(serde::de::Error::custom)
 }
 
-// impl Campaign {
-//     pub fn to_string(&self) -> String {
-// 	format!("{ctype},{userid},{segmentid},{bounceid},{realcid},{sendid},\
-// 		 {threadid},{seriesid},{formid},{basetemplateid},\
-// 		 {basemessageid},{addressid},{source},{name},{cdate},{mdate},\
-// 		 {sdate},{ldate},{send_amt},{total_amt},{opens},{uniqueopens},\
-// 		 {linkclicks},{uniquelinkclicks},{subscriberclicks},{forwards},\
-// 		 {uniqueforwards},{hardbounces},{softbounces},{unsubscribes},\
-// 		 {unsubscribes},{unsubreasons},{updates},{socialshares},\
-// 		 {replies},{uniquereplies}
-// 		 ", self.ctype, self.userid, self.segmentid, self.bounceid,
-// 		self.realcid, self.sendid, self.threadid, self.seriesid,
-// 		self.formid, self.basetemplateid, self.basemessageid,
-// 		self.addressid, self.source, self.name, self.cdate,
-// 		self.mdate, self.sdate,	self.ldate, self.send_amt,
-// 		self.total_amt, self.opens, self.uniqueopens, self.linkclicks,
-// 		self.uniquelinkclicks, self.subscriberclicks, self.forwards,
-// 		self.uniqueforwards, self.hardbounces, self.softbounces,
-// 		self.unsubscribes, self.unsubreasons, self.updates,
-// 		self.socialshares, self.replies, self.uniquereplies,
-// 		self.status, self.public, self.mail_transfer, self.mail_send,
-// 		self.mail_cleanup, self.mailer_log_file, self.tracklinks,
-// 		self.tracklinksanalytics, self.trackreads,
-// 		self.trackreadsanalytics, self.analytics_campaign_name,
-// 		self.tweet, self.facebook, self.survey, self.embed_images,
-// 		self.htmlunsub, self.textunsub, self.htmlunsubdata,
-// 		self.textunsubdata, self.recurring, self.willrecur,
-// 		self.split_type, self.split_content, self.split_offset,
-// 		self.split_offset_type, self.split_winner_messageid,
-// 		self.split_winner_awaiting, self.responder_offset,
-// 		self.responder_type, self.responder_existing,
-// 		self.reminder_field, self.reminder_format,
-// 		self.reminder_type, self.reminder_offset,
-// 		self.reminder_offset_type, self.reminder_offset_sign,
-// 		self.reminder_last_cron_run,
-// 		self.activerss_interval, self.activerss_url,
-// 		self.activerss_items, self.ip4, self.laststep,
-// 		self.managetext, self.schedule, self.scheduleddate,
-// 		self.waitpreview, self.deletestamp, self.replysys,
-// 		self.id, self.user, self.automation
-// 	);
-//     }
-// }
