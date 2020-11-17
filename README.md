@@ -1,7 +1,7 @@
 # RustActiveCampaign
-Rust interface to [Active Campaign](https://activecampaign.com). It implements the API as found here: https://developers.activecampaign.com/reference
+Rust interface to [Active Campaign](https://activecampaign.com). It implements the v3 API as found here: https://developers.activecampaign.com/reference
 
-Currently at its start, this project is able to list users (not all fields), and campaigns (not all fields).
+Currently at its start, this project is able to list users (not all fields), and campaigns.
 
 ---
 
